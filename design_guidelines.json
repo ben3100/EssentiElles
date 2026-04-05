@@ -1,0 +1,221 @@
+{
+  "project_name": "Livrella (EssentiElles)",
+  "domain": "Health, Wellness, Baby Products, E-commerce",
+  "theme": "Light",
+  "archetype": "Organic & Earthy / Pastel & Soft Hybrid",
+  "instructions_to_main_agent": [
+    "Strictly use React Native components (View, Text, Image, ScrollView, TouchableOpacity, etc.). NO web libraries like Tailwind, HTML, div, span, or className.",
+    "Use StyleSheet.create() for all styling logic.",
+    "Utilize 'expo-router' for navigation: Stack for Auth/Onboarding, Tabs for Main App.",
+    "Build a bilingual system (FR/EN). Create a centralized translation/dictionary module.",
+    "Implement minimum 48dp touch targets for accessibility on all interactive elements.",
+    "Add 'data-testid' to ALL interactive elements (buttons, inputs, cards, toggles) using kebab-case role-based names.",
+    "For components, focus on rounded corners (borderRadius: 16 to 24), soft shadows (elevation for Android, shadow props for iOS), and generous padding (16px to 24px).",
+    "DO NOT use placeholder image URLs (like via.placeholder.com). Use the media URLs provided in this file exclusively."
+  ],
+  "colors": {
+    "brand": {
+      "primary": "#B5838D",
+      "primary_light": "#E5B8BE",
+      "primary_dark": "#9D6B75",
+      "secondary": "#FFCAD4",
+      "accent": "#F4ECE6"
+    },
+    "background": {
+      "default": "#FDFBF9",
+      "card": "#FFFFFF",
+      "modal_overlay": "rgba(43, 45, 66, 0.4)"
+    },
+    "text": {
+      "primary": "#2B2D42",
+      "secondary": "#6D6875",
+      "tertiary": "#A09CAB",
+      "inverse": "#FFFFFF"
+    },
+    "feedback": {
+      "success": "#84A59D",
+      "success_bg": "#E9F2EF",
+      "error": "#F28482",
+      "error_bg": "#FDF0EF",
+      "warning": "#F4A261"
+    },
+    "borders": {
+      "light": "#F0EBE6",
+      "medium": "#E0D7D3"
+    }
+  },
+  "typography": {
+    "font_family": "Poppins",
+    "weights": {
+      "light": "300",
+      "regular": "400",
+      "medium": "500",
+      "semibold": "600",
+      "bold": "700"
+    },
+    "scales": {
+      "h1": { "fontSize": 32, "lineHeight": 40, "fontWeight": "700", "color": "#2B2D42", "letterSpacing": -0.5 },
+      "h2": { "fontSize": 24, "lineHeight": 32, "fontWeight": "600", "color": "#2B2D42", "letterSpacing": -0.3 },
+      "h3": { "fontSize": 20, "lineHeight": 28, "fontWeight": "600", "color": "#2B2D42" },
+      "body_large": { "fontSize": 18, "lineHeight": 26, "fontWeight": "400", "color": "#6D6875" },
+      "body": { "fontSize": 16, "lineHeight": 24, "fontWeight": "400", "color": "#6D6875" },
+      "body_small": { "fontSize": 14, "lineHeight": 20, "fontWeight": "400", "color": "#6D6875" },
+      "caption": { "fontSize": 12, "lineHeight": 16, "fontWeight": "500", "color": "#A09CAB", "textTransform": "uppercase", "letterSpacing": 0.5 },
+      "button": { "fontSize": 16, "lineHeight": 24, "fontWeight": "600" }
+    }
+  },
+  "spacing_and_layout": {
+    "base": 4,
+    "scale": {
+      "xs": 4,
+      "sm": 8,
+      "md": 16,
+      "lg": 24,
+      "xl": 32,
+      "xxl": 48,
+      "xxxl": 64
+    },
+    "screen_padding": 24,
+    "border_radius": {
+      "sm": 8,
+      "md": 16,
+      "lg": 24,
+      "pill": 9999
+    },
+    "shadows": {
+      "card": {
+        "ios": { "shadowColor": "#2B2D42", "shadowOffset": { "width": 0, "height": 4 }, "shadowOpacity": 0.05, "shadowRadius": 12 },
+        "android": { "elevation": 3 }
+      },
+      "button": {
+        "ios": { "shadowColor": "#B5838D", "shadowOffset": { "width": 0, "height": 4 }, "shadowOpacity": 0.2, "shadowRadius": 8 },
+        "android": { "elevation": 4 }
+      }
+    }
+  },
+  "components": {
+    "button": {
+      "primary": {
+        "backgroundColor": "#B5838D",
+        "borderRadius": 24,
+        "paddingVertical": 16,
+        "paddingHorizontal": 24,
+        "minHeight": 56,
+        "alignItems": "center",
+        "justifyContent": "center"
+      },
+      "secondary": {
+        "backgroundColor": "#FFCAD4",
+        "borderRadius": 24,
+        "paddingVertical": 16,
+        "paddingHorizontal": 24,
+        "minHeight": 56,
+        "alignItems": "center",
+        "justifyContent": "center"
+      },
+      "outline": {
+        "backgroundColor": "transparent",
+        "borderWidth": 1.5,
+        "borderColor": "#B5838D",
+        "borderRadius": 24,
+        "paddingVertical": 16,
+        "paddingHorizontal": 24,
+        "minHeight": 56,
+        "alignItems": "center",
+        "justifyContent": "center"
+      }
+    },
+    "card": {
+      "container": {
+        "backgroundColor": "#FFFFFF",
+        "borderRadius": 16,
+        "padding": 16,
+        "marginVertical": 8
+      }
+    },
+    "input": {
+      "container": {
+        "backgroundColor": "#FFFFFF",
+        "borderWidth": 1,
+        "borderColor": "#F0EBE6",
+        "borderRadius": 12,
+        "paddingHorizontal": 16,
+        "minHeight": 56,
+        "flexDirection": "row",
+        "alignItems": "center",
+        "marginVertical": 8
+      },
+      "focused": {
+        "borderColor": "#B5838D",
+        "borderWidth": 1.5
+      }
+    },
+    "bottom_tab_bar": {
+      "backgroundColor": "#FFFFFF",
+      "borderTopWidth": 1,
+      "borderTopColor": "#F0EBE6",
+      "height": 70,
+      "paddingBottom": 10,
+      "paddingTop": 10
+    }
+  },
+  "accessibility_and_testing": {
+    "touch_targets": "Ensure minHeight and minWidth of 48 for all Touchables.",
+    "contrast": "Text over backgrounds must have a minimum ratio of 4.5:1.",
+    "test_ids_examples": [
+      "login-submit-button",
+      "email-input",
+      "home-delivery-card",
+      "product-add-to-cart-button",
+      "tab-home",
+      "tab-profile"
+    ]
+  },
+  "image_urls": [
+    {
+      "category": "logo_and_splash",
+      "description": "App Logo / Splash Screen Icon - Elegant monogram for Livrella/EssentiElles",
+      "url": "https://static.prod-images.emergentagent.com/jobs/e6ee2148-1543-4c43-8db7-2adb7bb65eeb/images/f55d1e4ebfc00998a13400e3c4ea1b3fb088993bc07beb0d0ba1134a88f3fd07.png"
+    },
+    {
+      "category": "onboarding_1",
+      "description": "3D Premium subscription delivery box with wellness items",
+      "url": "https://static.prod-images.emergentagent.com/jobs/e6ee2148-1543-4c43-8db7-2adb7bb65eeb/images/02d0be2b5498e40c653746ccbb1d220910839794f8a4f2a512a91b34bbdb6c01.png"
+    },
+    {
+      "category": "onboarding_2",
+      "description": "3D elegant calendar representing monthly subscription",
+      "url": "https://static.prod-images.emergentagent.com/jobs/e6ee2148-1543-4c43-8db7-2adb7bb65eeb/images/04b9e03647977f8b33d623d4604b49a5373bc411c14f4955280a1e5de032ded3.png"
+    },
+    {
+      "category": "onboarding_3",
+      "description": "3D serene happy mother holding her baby",
+      "url": "https://static.prod-images.emergentagent.com/jobs/e6ee2148-1543-4c43-8db7-2adb7bb65eeb/images/8cb0ca5cb24f7777c907acaa14664bc3da6f52b80c906a6631c3cfd5391e47ca.png"
+    },
+    {
+      "category": "product_hygiene",
+      "description": "Organic feminine hygiene pads, stack on soft pink surface",
+      "url": "https://images.unsplash.com/photo-1764312270936-adb508140a6d?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2OTV8MHwxfHNlYXJjaHwyfHxvcmdhbmljJTIwZmVtaW5pbmUlMjBoeWdpZW5lJTIwcGFkcyUyMHNvZnQlMjBsaWdodGluZ3xlbnwwfHx8fDE3NzU0MDUxNjl8MA&ixlib=rb-4.1.0&q=85"
+    },
+    {
+      "category": "product_hygiene",
+      "description": "Organic feminine pads on pink surface",
+      "url": "https://images.unsplash.com/photo-1712677178403-a10c29e8797e?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2OTV8MHwxfHNlYXJjaHwzfHxvcmdhbmljJTIwZmVtaW5pbmUlMjBoeWdpZW5lJTIwcGFkcyUyMHNvZnQlMjBsaWdodGluZ3xlbnwwfHx8fDE3NzU0MDUxNjl8MA&ixlib=rb-4.1.0&q=85"
+    },
+    {
+      "category": "product_baby",
+      "description": "Premium clean baby diaper on white sheet",
+      "url": "https://images.unsplash.com/photo-1714350313517-ae7dadf0dc39?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzNzl8MHwxfHNlYXJjaHwzfHxwcmVtaXVtJTIwYmFieSUyMGRpYXBlcnMlMjBjbGVhbiUyMGxpZ2h0fGVufDB8fHx8MTc3NTQwNTE2OXww&ixlib=rb-4.1.0&q=85"
+    },
+    {
+      "category": "product_baby",
+      "description": "Charming baby in diaper looking curious",
+      "url": "https://images.pexels.com/photos/5889959/pexels-photo-5889959.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
+    },
+    {
+      "category": "lifestyle",
+      "description": "Happy mother holding baby",
+      "url": "https://images.unsplash.com/photo-1710657291103-9e00cc9b54d7?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1OTV8MHwxfHNlYXJjaHwyfHxoYXBweSUyMG1vdGhlciUyMHdpdGglMjBiYWJ5JTIwc29mdCUyMG5hdHVyYWwlMjBsaWdodHxlbnwwfHx8fDE3NzU0MDUxNjl8MA&ixlib=rb-4.1.0&q=85"
+    }
+  ]
+}
