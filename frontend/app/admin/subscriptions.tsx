@@ -107,7 +107,7 @@ export default function AdminSubscriptions() {
               </View>
               <StatusBadge status={item.status} small />
             </View>
-          ))
+          )}
         />
       )}
     </View>

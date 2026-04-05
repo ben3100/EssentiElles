@@ -217,7 +217,7 @@ export default function AdminProducts() {
                 </TouchableOpacity>
               </View>
             </View>
-          ))
+          )}
         />
       )}
 

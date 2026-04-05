@@ -120,7 +120,7 @@ export default function AdminOrders() {
                 </TouchableOpacity>
               </View>
             </View>
-          ))
+          )}
         />
       )}
     </View>
