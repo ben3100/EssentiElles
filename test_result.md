@@ -101,3 +101,329 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: "Build a subscription-based mobile app called Livrella for delivering essential daily products (feminine hygiene, baby diapers, wipes, etc.) to prevent stockouts at home. Target audience: active women and young mothers. Tech stack: React Native + Expo SDK 54, FastAPI, MongoDB. Features: subscription management (pause/resume/cancel/frequency), product catalog, cart, order tracking, customer support, profile management."
+
+backend:
+  - task: "Auth endpoints (register, login, get/update me)"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "FastAPI auth with JWT tokens implemented. Demo user sarah@example.com/password123"
+
+  - task: "Product catalog API"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "12 seeded products, categories, featured, search endpoints working"
+
+  - task: "Subscription management API"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "CRUD + pause/resume/cancel endpoints implemented"
+
+  - task: "Order management API"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Create order, list orders, get order by ID, tracking timeline"
+
+  - task: "Invoice API"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Invoice listing endpoint implemented"
+
+  - task: "Addresses API"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "CRUD + set default address"
+
+  - task: "Support/FAQ/Tickets API"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "FAQ, tickets CRUD, messages, close ticket endpoints"
+
+  - task: "Notifications API"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "List notifications, mark read, mark all read"
+
+  - task: "Offers API"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "low"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Offers list endpoint"
+
+frontend:
+  - task: "App splash screen and onboarding"
+    implemented: true
+    working: true
+    file: "frontend/app/(auth)/splash.tsx, onboarding.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Splash screen confirmed working in screenshot"
+
+  - task: "Authentication screens (login/register/forgot-password)"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/(auth)/login.tsx, register.tsx, forgot-password.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Files created, need to test login flow with sarah@example.com/password123"
+
+  - task: "Home screen with featured products and quick actions"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/(main)/(home)/home.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Home screen implemented with banner, featured products, recent orders widgets"
+
+  - task: "Product catalog and product detail screens"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/(main)/(catalog)/catalog.tsx, [id].tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Catalog with search/filter and product detail screen with subscribe button"
+
+  - task: "Subscriptions management screen"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/(main)/(subs)/subscriptions.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "List with filter chips, pause/resume/cancel actions"
+
+  - task: "Create subscription plan screen"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/(main)/(subs)/plan.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Frequency selection, quantity, address picker, confirmation"
+
+  - task: "Orders list and tracking screens"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/(main)/(orders)/orders.tsx, tracking.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Order list with filter, tracking with timeline progress"
+
+  - task: "Invoices screen"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/(main)/(orders)/invoices.tsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Invoice list with status badges"
+
+  - task: "User profile screen"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/(main)/(profile)/profile.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Avatar, user info, menu links to settings/addresses/invoices/support"
+
+  - task: "Settings screen"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/(main)/(profile)/settings.tsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Profile update form, notification toggles, account deletion"
+
+  - task: "Support screen with FAQ and tickets"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/(main)/(profile)/support.tsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "FAQ accordion, ticket list, create ticket modal"
+
+  - task: "Addresses management screen"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/(main)/(profile)/addresses.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Address CRUD with modal form, set default action"
+
+  - task: "Ticket chat screen"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/(main)/(profile)/ticket.tsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Chat interface for support tickets"
+
+  - task: "Cart screen"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/(main)/cart.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Cart items, quantity control, checkout to create order"
+
+  - task: "Offers screen"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/(main)/offers.tsx"
+    stuck_count: 0
+    priority: "low"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Offers list with colorful cards"
+
+  - task: "Notifications screen"
+    implemented: true
+    working: "NA"
+    file: "frontend/app/(main)/notifications.tsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Notification list, mark read/mark all read"
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: true
+
+test_plan:
+  current_focus:
+    - "Authentication screens (login/register/forgot-password)"
+    - "Home screen with featured products and quick actions"
+    - "Product catalog and product detail screens"
+    - "Subscriptions management screen"
+    - "User profile screen"
+    - "Cart screen"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "main"
+    message: "MVP screens are complete. All 14 missing screens have been created. Backend is fully running with MongoDB. Frontend Expo app is bundling successfully (970 modules). Splash screen confirmed working. Test credentials: sarah@example.com/password123 (customer), admin@livrella.com/Admin2026! (admin). Please test the full user flow: login -> home -> catalog -> product detail -> create subscription -> subscriptions list -> profile. Also test cart flow and support tickets."
