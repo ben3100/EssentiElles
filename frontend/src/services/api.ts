@@ -117,3 +117,27 @@ export const supportService = {
 export const offerService = {
   getAll: () => api.get('/offers'),
 };
+
+export const adminService = {
+  getDashboard: () => api.get('/admin/dashboard'),
+  getUsers: () => api.get('/admin/users'),
+  toggleUser: (id: string) => api.put(`/admin/users/${id}/toggle`),
+  getOrders: () => api.get('/admin/orders'),
+  updateOrderStatus: (id: string, status: string) =>
+    api.put(`/admin/orders/${id}/status`, null, { params: { status } }),
+  getSubscriptions: () => api.get('/admin/subscriptions'),
+  getTickets: () => api.get('/admin/tickets'),
+  replyTicket: (id: string, message: string) =>
+    api.post(`/admin/tickets/${id}/reply`, { message }),
+  createProduct: (data: any) => api.post('/products', data),
+  updateProduct: (id: string, data: any) => api.put(`/products/${id}`, data),
+  deleteProduct: (id: string) => api.delete(`/products/${id}`),
+  toggleProduct: (id: string) => api.put(`/products/${id}/toggle`),
+  broadcast: (title: string, body: string) =>
+    api.post('/admin/notifications/broadcast', null, { params: { title, body } }),
+  createOffer: (data: any) => api.post('/admin/offers', data),
+  updateOffer: (id: string, data: any) => api.put(`/admin/offers/${id}`, data),
+  deleteOffer: (id: string) => api.delete(`/admin/offers/${id}`),
+  getCategories: () => api.get('/categories'),
+  createCategory: (data: any) => api.post('/categories', data),
+};
