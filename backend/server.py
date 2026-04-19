@@ -15,6 +15,7 @@ from pathlib import Path
 from pydantic import BaseModel, Field
 from typing import List, Optional, Any
 from bson import ObjectId
+from validators import validate_email, validate_password, validate_phone, validate_quantity
 
 ROOT_DIR = Path(__file__).parent
 
@@ -23,7 +24,9 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
-JWT_SECRET = os.environ.get('JWT_SECRET', 'livrella_secret_key_2026')
+JWT_SECRET = os.environ.get('JWT_SECRET')
+if not JWT_SECRET:
+    raise RuntimeError("JWT_SECRET environment variable must be set")
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRY_DAYS = 30  # Long expiry for mobile
 
@@ -208,7 +211,10 @@ class OfferCreate(BaseModel):
 
 @api_router.post("/auth/register")
 async def register(body: RegisterRequest):
-    email = body.email.lower().strip()
+    email = validate_email(body.email.strip())
+    validate_password(body.password)
+    if body.phone:
+        validate_phone(body.phone)
     if await db.users.find_one({"email": email}):
         raise HTTPException(status_code=400, detail="Email déjà utilisé")
     now = datetime.now(timezone.utc)
@@ -258,20 +264,23 @@ async def update_me(body: UpdateProfileRequest, current_user: dict = Depends(get
 
 @api_router.put("/auth/me/password")
 async def change_password(body: ChangePasswordRequest, current_user: dict = Depends(get_current_user)):
+    validate_password(body.newPassword)
     user = await db.users.find_one({"_id": ObjectId(current_user["id"])})
     if not verify_password(body.currentPassword, user.get("password_hash", "")):
         raise HTTPException(status_code=400, detail="Mot de passe actuel incorrect")
     await db.users.update_one(
         {"_id": ObjectId(current_user["id"])},
-        {"$set": {"password_hash": hash_password(body.newPassword)}}
+        {"$set": {"password_hash": hash_password(body.newPassword), "updatedAt": datetime.now(timezone.utc)}}
     )
     return {"message": "Mot de passe modifié"}
 
+class ForgotPasswordRequest(BaseModel):
+    email: str
+
 @api_router.post("/auth/forgot-password")
-async def forgot_password(email: str):
-    user = await db.users.find_one({"email": email.lower()})
+async def forgot_password(body: ForgotPasswordRequest):
     # Always return success to avoid user enumeration
-    logger.info(f"Password reset requested for: {email}")
+    logger.info("Password reset requested")
     return {"message": "Si ce compte existe, un email vous a été envoyé"}
 
 # ==================== CATEGORIES ====================
@@ -458,12 +467,18 @@ async def get_subscription(sub_id: str, current_user: dict = Depends(get_current
 
 @api_router.post("/subscriptions")
 async def create_subscription(body: SubscriptionCreate, current_user: dict = Depends(get_current_user)):
-    product = await db.products.find_one({"_id": ObjectId(body.productId)})
+    freq_days = {"weekly": 7, "biweekly": 14, "monthly": 30}
+    if body.frequency not in freq_days:
+        raise HTTPException(status_code=400, detail="Fréquence invalide. Valeurs autorisées : weekly, biweekly, monthly")
+    product = await db.products.find_one({"_id": ObjectId(body.productId), "isActive": True})
     if not product:
         raise HTTPException(status_code=404, detail="Produit introuvable")
+    address = await db.addresses.find_one({"_id": ObjectId(body.addressId), "userId": current_user["id"]})
+    if not address:
+        raise HTTPException(status_code=404, detail="Adresse introuvable")
+    validate_quantity(body.quantity)
     now = datetime.now(timezone.utc)
-    freq_days = {"weekly": 7, "biweekly": 14, "monthly": 30}
-    next_delivery = now + timedelta(days=freq_days.get(body.frequency, 30))
+    next_delivery = now + timedelta(days=freq_days[body.frequency])
     unit_price = product.get("subscriptionPrice", product.get("price", 0))
     doc = {
         "userId": current_user["id"],
@@ -767,8 +782,15 @@ async def admin_get_orders(admin=Depends(get_admin_user)):
     orders = await db.orders.find({}).sort("createdAt", -1).to_list(500)
     return [serialize_doc(o) for o in orders]
 
+class OrderStatusUpdate(BaseModel):
+    status: str
+
 @api_router.put("/admin/orders/{order_id}/status")
-async def admin_update_order_status(order_id: str, status: str, admin=Depends(get_admin_user)):
+async def admin_update_order_status(order_id: str, body: OrderStatusUpdate, admin=Depends(get_admin_user)):
+    allowed_statuses = {"confirmed", "preparing", "shipped", "delivered", "cancelled"}
+    if body.status not in allowed_statuses:
+        raise HTTPException(status_code=400, detail="Statut invalide")
+    status = body.status
     now = datetime.now(timezone.utc)
     status_labels = {
         "confirmed": "Commande confirmée", "preparing": "En cours de préparation",
@@ -813,12 +835,16 @@ async def admin_reply_ticket(ticket_id: str, body: TicketMessage, admin=Depends(
     ticket = await db.support_tickets.find_one({"_id": ObjectId(ticket_id)})
     return serialize_doc(ticket)
 
+class BroadcastRequest(BaseModel):
+    title: str
+    body: str
+
 @api_router.post("/admin/notifications/broadcast")
-async def admin_broadcast(title: str, body: str, admin=Depends(get_admin_user)):
+async def admin_broadcast(req: BroadcastRequest, admin=Depends(get_admin_user)):
     users = await db.users.find({"role": "customer", "isActive": True}).to_list(1000)
     now = datetime.now(timezone.utc)
     notifs = [
-        {"userId": str(u["_id"]), "type": "system", "title": title, "body": body, "isRead": False, "createdAt": now}
+        {"userId": str(u["_id"]), "type": "system", "title": req.title, "body": req.body, "isRead": False, "createdAt": now}
         for u in users
     ]
     if notifs:
@@ -1003,7 +1029,7 @@ async def seed_demo_user():
         "satisfactionRating": 5,
         "createdAt": now - timedelta(days=10), "updatedAt": now - timedelta(days=8)
     })
-    logger.info("Demo user seeded: sarah@example.com / password123")
+    logger.info("Demo user seeded: sarah@example.com")
 
 async def seed_offers():
     now = datetime.now(timezone.utc)

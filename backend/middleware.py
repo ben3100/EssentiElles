@@ -5,7 +5,7 @@ from fastapi import Request, HTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response, JSONResponse
 from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import time
 import logging
 from typing import Dict, Tuple
@@ -24,7 +24,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         self.requests_per_minute = requests_per_minute
         self.requests: Dict[str, list] = defaultdict(list)
         self.cleanup_interval = timedelta(minutes=5)
-        self.last_cleanup = datetime.now()
+        self.last_cleanup = datetime.now(timezone.utc)
     
     async def dispatch(self, request: Request, call_next):
         # Skip rate limiting for health checks
@@ -33,7 +33,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         
         # Get client IP
         client_ip = request.client.host
-        current_time = datetime.now()
+        current_time = datetime.now(timezone.utc)
         
         # Cleanup old requests periodically
         if current_time - self.last_cleanup > self.cleanup_interval:
@@ -65,7 +65,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
     
     def _cleanup_old_requests(self):
         """Remove requests older than 5 minutes"""
-        cutoff_time = datetime.now() - timedelta(minutes=5)
+        cutoff_time = datetime.now(timezone.utc) - timedelta(minutes=5)
         for ip in list(self.requests.keys()):
             self.requests[ip] = [
                 req_time for req_time in self.requests[ip]

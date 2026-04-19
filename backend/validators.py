@@ -3,7 +3,6 @@ Input validation utilities for enhanced security
 """
 import re
 from typing import Optional
-from pydantic import validator, EmailStr
 from fastapi import HTTPException
 
 
@@ -141,11 +140,23 @@ def validate_quantity(quantity: int) -> int:
             status_code=400,
             detail="La quantité doit être au moins 1"
         )
-    
+
     if quantity > 1000:
         raise HTTPException(
             status_code=400,
             detail="Quantité trop élevée (maximum 1000)"
         )
-    
+
     return quantity
+
+
+ALLOWED_FREQUENCIES = {"weekly", "biweekly", "monthly"}
+
+def validate_frequency(frequency: str) -> str:
+    """Validate subscription delivery frequency"""
+    if frequency not in ALLOWED_FREQUENCIES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Fréquence invalide. Valeurs autorisées : {', '.join(sorted(ALLOWED_FREQUENCIES))}"
+        )
+    return frequency
