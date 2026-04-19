@@ -14,7 +14,7 @@ export default function SectionHeader({ title, actionLabel, onAction }: Props) {
     <View style={styles.row}>
       <Text style={styles.title}>{title}</Text>
       {actionLabel && onAction ? (
-        <TouchableOpacity onPress={onAction} testID={`section-header-action-${title}`}>
+        <TouchableOpacity onPress={onAction} testID={`section-header-action-${title}`} style={styles.actionButton}>
           <Text style={styles.action}>{actionLabel}</Text>
         </TouchableOpacity>
       ) : null}
@@ -27,15 +27,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: Spacing.sm,
+    marginBottom: Spacing.md,
   },
   title: {
-    ...Typography.h4,
+    ...Typography.sectionTitle,
     color: Colors.textPrimary,
   },
+  actionButton: {
+    paddingVertical: Spacing.xs,
+    paddingHorizontal: Spacing.sm,
+    borderRadius: 9999,
+    backgroundColor: Colors.surfaceAlt,
+    borderWidth: 1,
+    borderColor: Colors.borderLight,
+  },
   action: {
-    ...Typography.bodySmall,
-    color: Colors.primary,
+    ...Typography.caption,
+    color: Colors.primaryDark,
     fontFamily: 'Poppins_500Medium',
   },
 });

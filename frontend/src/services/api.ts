@@ -1,10 +1,9 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const BASE_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
+import { API_UNREACHABLE_MESSAGE, getApiBaseUrl } from '../constants/api';
 
 const api = axios.create({
-  baseURL: `${BASE_URL}/api`,
+  baseURL: getApiBaseUrl(),
   headers: { 'Content-Type': 'application/json' },
   timeout: 15000,
 });
@@ -23,6 +22,7 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     const message =
+      (!error.response && error.message === 'Network Error' && API_UNREACHABLE_MESSAGE) ||
       error.response?.data?.detail ||
       error.message ||
       'Une erreur est survenue';

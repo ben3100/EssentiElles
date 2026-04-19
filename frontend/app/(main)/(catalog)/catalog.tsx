@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, ScrollView, RefreshControl } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { productService, categoryService } from '../../../src/services/api';
@@ -13,10 +13,17 @@ import { Typography, Spacing, BorderRadius } from '../../../src/constants/spacin
 
 export default function CatalogScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ category?: string }>();
+  const routeCategory = typeof params.category === 'string' ? params.category : null;
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedCat, setSelectedCat] = useState<string | null>(null);
+  const [selectedCat, setSelectedCat] = useState<string | null>(routeCategory);
   const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState<'popular' | 'priceAsc' | 'priceDesc' | 'discount'>('popular');
+  const [inStockOnly, setInStockOnly] = useState(false);
+  const [featuredOnly, setFeaturedOnly] = useState(false);
+  const [maxPrice, setMaxPrice] = useState<number | null>(null);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -34,7 +41,11 @@ export default function CatalogScreen() {
     }
   }, []);
 
-  useEffect(() => { load(selectedCat, search); }, [selectedCat]);
+  useEffect(() => {
+    setSelectedCat(routeCategory);
+  }, [routeCategory]);
+
+  useEffect(() => { load(selectedCat, search); }, [selectedCat, load]);
 
   const handleSearch = (text: string) => {
     setSearch(text);
@@ -42,6 +53,20 @@ export default function CatalogScreen() {
   };
 
   const onRefresh = () => { setRefreshing(true); load(selectedCat, search); };
+
+  const filteredAndSortedProducts = products
+    .filter((p) => {
+      if (inStockOnly && !p.inStock) return false;
+      if (featuredOnly && !p.isFeatured) return false;
+      if (maxPrice !== null && p.subscriptionPrice > maxPrice) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'priceAsc') return a.subscriptionPrice - b.subscriptionPrice;
+      if (sortBy === 'priceDesc') return b.subscriptionPrice - a.subscriptionPrice;
+      if (sortBy === 'discount') return b.discountPercentage - a.discountPercentage;
+      return b.reviewCount - a.reviewCount;
+    });
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -68,6 +93,62 @@ export default function CatalogScreen() {
           </TouchableOpacity>
         )}
       </View>
+
+      <View style={styles.advancedHeader}>
+        <TouchableOpacity style={styles.advancedToggle} onPress={() => setShowAdvancedFilters(v => !v)}>
+          <Ionicons name="options-outline" size={16} color={Colors.primaryDark} />
+          <Text style={styles.advancedToggleText}>Filtres avancés</Text>
+          <Ionicons name={showAdvancedFilters ? 'chevron-up' : 'chevron-down'} size={16} color={Colors.primaryDark} />
+        </TouchableOpacity>
+      </View>
+
+      {showAdvancedFilters && (
+        <View style={styles.advancedPanel}>
+          <Text style={styles.filterSectionTitle}>Tri</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.sortRow}>
+            {[
+              { key: 'popular', label: 'Populaires' },
+              { key: 'priceAsc', label: 'Prix croissant' },
+              { key: 'priceDesc', label: 'Prix décroissant' },
+              { key: 'discount', label: 'Meilleures promos' },
+            ].map((option) => (
+              <TouchableOpacity
+                key={option.key}
+                style={[styles.optionChip, sortBy === option.key && styles.optionChipActive]}
+                onPress={() => setSortBy(option.key as typeof sortBy)}
+              >
+                <Text style={[styles.optionChipText, sortBy === option.key && styles.optionChipTextActive]}>{option.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+
+          <Text style={[styles.filterSectionTitle, { marginTop: Spacing.sm }]}>Affinage</Text>
+          <View style={styles.toggleRow}>
+            <TouchableOpacity style={[styles.optionChip, inStockOnly && styles.optionChipActive]} onPress={() => setInStockOnly(v => !v)}>
+              <Text style={[styles.optionChipText, inStockOnly && styles.optionChipTextActive]}>En stock uniquement</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.optionChip, featuredOnly && styles.optionChipActive]} onPress={() => setFeaturedOnly(v => !v)}>
+              <Text style={[styles.optionChipText, featuredOnly && styles.optionChipTextActive]}>Produits vedettes</Text>
+            </TouchableOpacity>
+          </View>
+
+          <Text style={[styles.filterSectionTitle, { marginTop: Spacing.sm }]}>Prix max abonnement</Text>
+          <View style={styles.toggleRow}>
+            {[15, 25, 40].map((price) => (
+              <TouchableOpacity
+                key={price}
+                style={[styles.optionChip, maxPrice === price && styles.optionChipActive]}
+                onPress={() => setMaxPrice((prev) => (prev === price ? null : price))}
+              >
+                <Text style={[styles.optionChipText, maxPrice === price && styles.optionChipTextActive]}>{`≤ ${price} €`}</Text>
+              </TouchableOpacity>
+            ))}
+            <TouchableOpacity style={styles.clearFiltersBtn} onPress={() => { setInStockOnly(false); setFeaturedOnly(false); setMaxPrice(null); setSortBy('popular'); }}>
+              <Text style={styles.clearFiltersText}>Réinitialiser</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
 
       {/* Category Filters */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.catScroll} contentContainerStyle={styles.catContent}>
@@ -96,7 +177,7 @@ export default function CatalogScreen() {
       ) : (
         <FlatList
           testID="catalog-product-list"
-          data={products}
+          data={filteredAndSortedProducts}
           numColumns={2}
           keyExtractor={item => item.id}
           contentContainerStyle={styles.grid}
@@ -135,6 +216,45 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: Colors.borderLight,
   },
   searchInput: { flex: 1, ...Typography.body, color: Colors.textPrimary },
+  advancedHeader: { paddingHorizontal: Spacing.screen, marginBottom: Spacing.sm },
+  advancedToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    alignSelf: 'flex-start',
+    backgroundColor: Colors.primaryPale,
+    borderRadius: BorderRadius.pill,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: Colors.primaryLight,
+  },
+  advancedToggleText: { ...Typography.bodySmall, color: Colors.primaryDark, fontFamily: 'Poppins_500Medium' },
+  advancedPanel: {
+    marginHorizontal: Spacing.screen,
+    marginBottom: Spacing.sm,
+    borderWidth: 1,
+    borderColor: Colors.borderLight,
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.md,
+  },
+  filterSectionTitle: { ...Typography.caption, color: Colors.textSecondary, marginBottom: 6 },
+  sortRow: { gap: 8 },
+  toggleRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  optionChip: {
+    borderWidth: 1,
+    borderColor: Colors.borderMedium,
+    backgroundColor: Colors.surfaceAlt,
+    borderRadius: BorderRadius.pill,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  optionChipActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
+  optionChipText: { ...Typography.caption, color: Colors.textSecondary, fontFamily: 'Poppins_500Medium' },
+  optionChipTextActive: { color: Colors.textInverse },
+  clearFiltersBtn: { justifyContent: 'center', paddingHorizontal: 6 },
+  clearFiltersText: { ...Typography.caption, color: Colors.primaryDark, textDecorationLine: 'underline' },
   catScroll: { maxHeight: 44 },
   catContent: { paddingHorizontal: Spacing.screen, gap: 8 },
   chip: {

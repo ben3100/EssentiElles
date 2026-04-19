@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
-  Alert, ScrollView, RefreshControl, ActivityIndicator, Modal
+  Alert, ScrollView, RefreshControl, ActivityIndicator
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { adminService } from '../../src/services/api';
@@ -28,7 +28,6 @@ export default function AdminOrders() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState('all');
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -120,7 +119,7 @@ export default function AdminOrders() {
                 </TouchableOpacity>
               </View>
             </View>
-          ))
+          )}
         />
       )}
     </View>

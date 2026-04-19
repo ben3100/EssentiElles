@@ -1,62 +1,211 @@
 import React, { useState } from 'react';
 import {
-  View, Text, StyleSheet, FlatList, TouchableOpacity,
-  Alert, ScrollView
+  View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput,
+  Alert
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useCartStore } from '../../src/store/cartStore';
-import { addressService, orderService } from '../../src/services/api';
-import { Address } from '../../src/models/types';
+import { addressService } from '../../src/services/api';
+import { checkoutCart } from '../../src/services/paymentService';
+import { Address, OrderItem } from '../../src/models/types';
 import EmptyState from '../../src/components/ui/EmptyState';
 import PrimaryButton from '../../src/components/ui/PrimaryButton';
 import { Colors } from '../../src/constants/colors';
 import { Typography, Spacing, BorderRadius, Shadow } from '../../src/constants/spacing';
+import { getPaymentMode } from '../../src/constants/payment';
+import { t } from '../../src/constants/strings';
 
 export default function CartScreen() {
   const router = useRouter();
-  const { items, removeItem, updateQuantity, clearCart, total, itemCount } = useCartStore();
+  const { items, updateQuantity, clearCart, total, itemCount } = useCartStore();
+  const [step, setStep] = useState<'cart' | 'checkout' | 'confirmation'>('cart');
   const [ordering, setOrdering] = useState(false);
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<string>('');
+  const [deliveryNote, setDeliveryNote] = useState('');
+  const [confirmedOrderNumber, setConfirmedOrderNumber] = useState('');
+  const [confirmedTotal, setConfirmedTotal] = useState(0);
+  const isDemoMode = getPaymentMode() === 'demo';
 
-  const handleCheckout = async () => {
+  const prepareCheckout = async () => {
     if (items.length === 0) return;
     setOrdering(true);
     try {
       const addrRes = await addressService.getAll();
-      const addresses: Address[] = addrRes.data;
-      if (addresses.length === 0) {
+      const fetchedAddresses: Address[] = addrRes.data;
+      if (fetchedAddresses.length === 0) {
         Alert.alert(
           'Adresse requise',
           'Veuillez d\'abord ajouter une adresse de livraison',
           [
-            { text: 'Ajouter', onPress: () => router.push('/(main)/addresses' as any) },
+            { text: 'Ajouter', onPress: () => router.push('/(main)/profile/addresses' as any) },
             { text: 'Annuler' }
           ]
         );
         return;
       }
-      const defAddr = addresses.find(a => a.isDefault) || addresses[0];
-      const orderItems = items.map(i => ({
+
+      const defAddr = fetchedAddresses.find(a => a.isDefault) || fetchedAddresses[0];
+      setAddresses(fetchedAddresses);
+      setSelectedAddressId(defAddr.id);
+      setStep('checkout');
+    } catch (err: any) {
+      Alert.alert('Erreur', err.message || 'Impossible de charger vos adresses');
+    } finally {
+      setOrdering(false);
+    }
+  };
+
+  const handleConfirmOrder = async () => {
+    if (!selectedAddressId) {
+      Alert.alert('Adresse requise', 'Sélectionnez une adresse de livraison pour continuer.');
+      return;
+    }
+
+    setOrdering(true);
+    try {
+      const orderItems: OrderItem[] = items.map(i => ({
         productId: i.product.id,
         productName: i.product.name,
         quantity: i.quantity,
         unitPrice: i.product.subscriptionPrice,
         totalPrice: i.product.subscriptionPrice * i.quantity,
       }));
-      await orderService.create({ items: orderItems, addressId: defAddr.id });
+      const result = await checkoutCart({
+        items: orderItems,
+        addressId: selectedAddressId,
+        notes: deliveryNote.trim() || undefined,
+      });
+
+      setConfirmedOrderNumber(result.order.orderNumber);
+      setConfirmedTotal(result.order.total || total());
       clearCart();
-      Alert.alert(
-        '🎉 Commande passée !',
-        'Votre commande a été confirmée. Vous pouvez suivre sa progression.',
-        [{ text: 'Voir mes commandes', onPress: () => router.push('/(main)/orders' as any) }]
-      );
+      setStep('confirmation');
     } catch (err: any) {
       Alert.alert('Erreur', err.message || 'Impossible de passer la commande');
     } finally {
       setOrdering(false);
     }
   };
+
+  if (step === 'confirmation') {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+            <Ionicons name="arrow-back" size={22} color={Colors.textPrimary} />
+          </TouchableOpacity>
+          <Text style={styles.title}>Commande confirmée</Text>
+        </View>
+
+        <View style={styles.confirmationCard}>
+          <View style={styles.confirmationIconWrap}>
+            <Ionicons name="checkmark" size={28} color={Colors.textInverse} />
+          </View>
+          <Text style={styles.confirmationTitle}>Merci pour votre commande 🎉</Text>
+          <Text style={styles.confirmationSubtitle}>
+            Votre commande a bien été enregistrée{isDemoMode ? ' (mode démo)' : ''}.
+          </Text>
+
+          <View style={styles.confirmationRow}>
+            <Text style={styles.confirmationLabel}>N° de commande</Text>
+            <Text style={styles.confirmationValue}>{confirmedOrderNumber || '—'}</Text>
+          </View>
+          <View style={styles.confirmationRow}>
+            <Text style={styles.confirmationLabel}>Montant total</Text>
+            <Text style={styles.confirmationValue}>{confirmedTotal.toFixed(2)} €</Text>
+          </View>
+
+          <PrimaryButton
+            label="Suivre ma commande"
+            onPress={() => router.push('/(main)/orders' as any)}
+            style={{ marginTop: Spacing.md }}
+          />
+          <TouchableOpacity style={styles.secondaryAction} onPress={() => router.push('/(main)/catalog' as any)}>
+            <Text style={styles.secondaryActionText}>Continuer mes achats</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (step === 'checkout') {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => setStep('cart')} style={styles.backBtn}>
+            <Ionicons name="arrow-back" size={22} color={Colors.textPrimary} />
+          </TouchableOpacity>
+          <Text style={styles.title}>Validation de commande</Text>
+        </View>
+
+        <FlatList
+          data={addresses}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.list}
+          ListHeaderComponent={
+            <View style={styles.summary}>
+              <Text style={styles.sectionTitle}>Adresse de livraison</Text>
+              <Text style={styles.sectionSubtitle}>Sélectionnez l'adresse à utiliser pour cette commande.</Text>
+            </View>
+          }
+          renderItem={({ item }) => {
+            const selected = item.id === selectedAddressId;
+            return (
+              <TouchableOpacity
+                style={[styles.addressCard, selected && styles.addressCardSelected]}
+                onPress={() => setSelectedAddressId(item.id)}
+              >
+                <View style={styles.addressTopRow}>
+                  <Text style={styles.addressLabel}>{item.label}</Text>
+                  {item.isDefault && <Text style={styles.defaultBadge}>Par défaut</Text>}
+                </View>
+                <Text style={styles.addressText}>{item.firstName} {item.lastName}</Text>
+                <Text style={styles.addressText}>{item.street}</Text>
+                <Text style={styles.addressText}>{item.zipCode} {item.city}, {item.country}</Text>
+              </TouchableOpacity>
+            );
+          }}
+          ListFooterComponent={
+            <View style={styles.summary}>
+              <Text style={styles.sectionTitle}>Instructions de livraison (optionnel)</Text>
+              <TextInput
+                value={deliveryNote}
+                onChangeText={setDeliveryNote}
+                placeholder="Code d'entrée, étage, point de dépôt..."
+                multiline
+                numberOfLines={3}
+                placeholderTextColor={Colors.textPlaceholder}
+                style={styles.noteInput}
+              />
+
+              <View style={styles.summaryRow}>
+                <Text style={styles.summaryLabel}>Sous-total ({itemCount()} articles)</Text>
+                <Text style={styles.summaryValue}>{total().toFixed(2)} €</Text>
+              </View>
+              <View style={styles.summaryRow}>
+                <Text style={styles.summaryLabel}>Livraison</Text>
+                <Text style={[styles.summaryValue, { color: Colors.success }]}>Gratuite 🚚</Text>
+              </View>
+              <View style={[styles.summaryRow, styles.totalRow]}>
+                <Text style={styles.totalLabel}>Total à payer</Text>
+                <Text style={styles.totalValue}>{total().toFixed(2)} €</Text>
+              </View>
+
+              <PrimaryButton
+                label="Confirmer la commande"
+                onPress={handleConfirmOrder}
+                loading={ordering}
+                style={{ marginTop: Spacing.md }}
+              />
+            </View>
+          }
+        />
+      </SafeAreaView>
+    );
+  }
 
   if (items.length === 0) {
     return (
@@ -143,9 +292,15 @@ export default function CartScreen() {
               <Text style={styles.totalLabel}>Total</Text>
               <Text style={styles.totalValue}>{total().toFixed(2)} €</Text>
             </View>
+            {isDemoMode && (
+              <View style={styles.demoBadge}>
+                <Ionicons name="flask-outline" size={14} color={Colors.info} />
+                <Text style={styles.demoBadgeText}>{t('paymentDemoMode')}</Text>
+              </View>
+            )}
             <PrimaryButton
               label="Valider la commande"
-              onPress={handleCheckout}
+              onPress={prepareCheckout}
               loading={ordering}
               style={{ marginTop: Spacing.md }}
             />
@@ -173,10 +328,97 @@ const styles = StyleSheet.create({
   qtyVal: { fontSize: 16, fontFamily: 'Poppins_700Bold', color: Colors.textPrimary, minWidth: 24, textAlign: 'center' },
   lineTotal: { ...Typography.subtitle, color: Colors.primary, marginLeft: 8 },
   summary: { backgroundColor: Colors.surface, borderRadius: BorderRadius.lg, padding: Spacing.md, marginTop: Spacing.sm, ...Shadow.card },
+  sectionTitle: { ...Typography.subtitle, color: Colors.textPrimary, marginBottom: Spacing.xs },
+  sectionSubtitle: { ...Typography.caption, color: Colors.textSecondary },
   summaryRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
   summaryLabel: { fontSize: 14, color: Colors.textSecondary },
   summaryValue: { fontSize: 14, color: Colors.textPrimary, fontFamily: 'Poppins_500Medium' },
   totalRow: { borderTopWidth: 1, borderTopColor: Colors.borderLight, paddingTop: 8, marginTop: 4, marginBottom: 0 },
   totalLabel: { ...Typography.subtitle, color: Colors.textPrimary },
   totalValue: { ...Typography.h4, color: Colors.primary },
+  demoBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: Colors.infoBg,
+    borderWidth: 1,
+    borderColor: Colors.info + '30',
+    borderRadius: BorderRadius.pill,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    alignSelf: 'flex-start',
+    marginTop: 8,
+  },
+  demoBadgeText: {
+    fontSize: 12,
+    color: Colors.info,
+    fontFamily: 'Poppins_500Medium',
+  },
+  addressCard: {
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    borderColor: Colors.borderLight,
+    padding: Spacing.md,
+    marginBottom: Spacing.sm,
+  },
+  addressCardSelected: {
+    borderColor: Colors.primary,
+    backgroundColor: Colors.primaryPale,
+  },
+  addressTopRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
+  addressLabel: { ...Typography.bodyEmphasis, color: Colors.textPrimary },
+  defaultBadge: {
+    ...Typography.caption,
+    color: Colors.primaryDark,
+    backgroundColor: Colors.secondary,
+    borderRadius: BorderRadius.pill,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  addressText: { ...Typography.bodySmall, color: Colors.textSecondary },
+  noteInput: {
+    borderWidth: 1,
+    borderColor: Colors.borderLight,
+    borderRadius: BorderRadius.md,
+    backgroundColor: Colors.surface,
+    minHeight: 86,
+    textAlignVertical: 'top',
+    padding: Spacing.md,
+    ...Typography.body,
+    color: Colors.textPrimary,
+    marginTop: Spacing.xs,
+    marginBottom: Spacing.md,
+  },
+  confirmationCard: {
+    margin: Spacing.screen,
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.xl,
+    padding: Spacing.lg,
+    ...Shadow.card,
+  },
+  confirmationIconWrap: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.success,
+    alignSelf: 'center',
+    marginBottom: Spacing.md,
+  },
+  confirmationTitle: { ...Typography.h4, color: Colors.textPrimary, textAlign: 'center' },
+  confirmationSubtitle: { ...Typography.body, color: Colors.textSecondary, textAlign: 'center', marginTop: Spacing.xs, marginBottom: Spacing.lg },
+  confirmationRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: Spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.borderLight,
+  },
+  confirmationLabel: { ...Typography.bodySmall, color: Colors.textSecondary },
+  confirmationValue: { ...Typography.bodyEmphasis, color: Colors.textPrimary },
+  secondaryAction: { marginTop: Spacing.md, alignSelf: 'center' },
+  secondaryActionText: { ...Typography.bodySmall, color: Colors.primaryDark, fontFamily: 'Poppins_500Medium' },
 });

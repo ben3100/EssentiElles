@@ -48,7 +48,7 @@ export default function RegisterScreen() {
         phone: form.phone.trim() || undefined,
       });
       await setAuth(res.data.token, res.data.user as User);
-      router.replace('/(main)/home');
+      router.replace('/(main)/(home)/home');
     } catch (err: any) {
       Alert.alert('Erreur d\'inscription', err.message || 'Une erreur est survenue');
     } finally {
@@ -102,6 +102,9 @@ export default function RegisterScreen() {
               placeholder="votre@email.com"
               keyboardType="email-address"
               autoCapitalize="none"
+              autoCorrect={false}
+              textContentType="emailAddress"
+              autoComplete="email"
               icon="mail-outline"
               error={errors.email}
             />
@@ -122,6 +125,10 @@ export default function RegisterScreen() {
               placeholder="••••••••"
               secureTextEntry
               secureToggle
+              autoCapitalize="none"
+              autoCorrect={false}
+              textContentType="newPassword"
+              autoComplete="password-new"
               icon="lock-closed-outline"
               error={errors.password}
             />
@@ -133,6 +140,10 @@ export default function RegisterScreen() {
               placeholder="••••••••"
               secureTextEntry
               secureToggle
+              autoCapitalize="none"
+              autoCorrect={false}
+              textContentType="password"
+              autoComplete="password"
               icon="lock-closed-outline"
               error={errors.confirmPassword}
             />
@@ -164,10 +175,19 @@ const styles = StyleSheet.create({
   header: { padding: Spacing.xl, paddingTop: Spacing.xl },
   backBtn: { marginBottom: Spacing.lg },
   title: { ...Typography.h2, color: Colors.textPrimary },
-  subtitle: { ...Typography.body, color: Colors.textSecondary, marginTop: 8 },
-  form: { flex: 1, padding: Spacing.xl },
+  subtitle: { ...Typography.body, color: Colors.textSecondary, marginTop: Spacing.sm },
+  form: {
+    flex: 1,
+    padding: Spacing.xl,
+    backgroundColor: Colors.surface,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    borderTopWidth: 1,
+    borderColor: Colors.borderLight,
+    marginTop: Spacing.md,
+  },
   row: { flexDirection: 'row' },
   loginRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: Spacing.lg, paddingBottom: Spacing.xl },
   loginText: { ...Typography.body, color: Colors.textSecondary },
-  loginLink: { ...Typography.body, color: Colors.primary, fontFamily: 'Poppins_600SemiBold' },
+  loginLink: { ...Typography.bodyEmphasis, color: Colors.primaryDark },
 });

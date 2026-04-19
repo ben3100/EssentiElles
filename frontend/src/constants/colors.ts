@@ -1,67 +1,81 @@
-// Livrella Design System — Color Palette
+/**
+ * EssentiElles Design System — Color Palette
+ * Soft · Premium · Maternal · Minimal
+ */
+
 export const Colors = {
-  // Brand
-  primary: '#B5838D',
-  primaryLight: '#E5B8BE',
-  primaryDark: '#9D6B75',
-  primaryPale: '#FCE8EB',
-  secondary: '#FFCAD4',
-  accent: '#F4ECE6',
+  // ─── Brand ──────────────────────────────────────────────────────────────────
+  primary: '#B5838D',        // dusty rose taupe — main CTA, active states
+  primaryLight: '#D4A8B0',   // lighter rose for hover/pressed
+  primaryMuted: '#F2E4E6',   // very light rose for pill backgrounds
+  primaryPale: '#F8EFF0',    // palest rose for subtle backgrounds
+  primaryDark: '#8E5A63',    // deeper rose for text on light bg / contrast
+  primaryDeep: '#6B3A42',    // darkest rose for strong emphasis
 
-  // Backgrounds
-  background: '#FDFBF9',
-  surface: '#FFFFFF',
-  surfaceAlt: '#FFF8FA',
-  card: '#FFFFFF',
+  // ─── Background ─────────────────────────────────────────────────────────────
+  background: '#FAF7F4',     // warm ivory — main screen background
+  surface: '#FFFFFF',        // white — card surfaces
+  surfaceAlt: '#F5F0EB',     // warm off-white for alternate surfaces
+  card: '#FFFFFF',           // alias for surface (card backgrounds)
 
-  // Text
-  textPrimary: '#2B2D42',
-  textSecondary: '#6D6875',
-  textTertiary: '#A09CAB',
-  textInverse: '#FFFFFF',
-  textPlaceholder: '#C4B5BB',
+  // ─── Secondary ──────────────────────────────────────────────────────────────
+  secondary: '#EEF3ED',      // very light sage — secondary button fill
 
-  // Borders
-  borderLight: '#F0EBE6',
-  borderMedium: '#E0D7D3',
+  // ─── Accent / Sage ──────────────────────────────────────────────────────────
+  accent: '#A8B8A3',         // soft sage green — secondary accent
+  accentSage: '#A8B8A3',     // alias for accent (sage green)
+  accentSageSoft: '#EEF3ED', // very soft sage background
+  accentLight: '#D6E2D3',    // light sage for tags, pills
+  accentMuted: '#EEF3ED',    // very light sage backgrounds
 
-  // Feedback
-  success: '#84A59D',
-  successBg: '#E9F2EF',
-  error: '#F28482',
-  errorBg: '#FDF0EF',
-  warning: '#F4A261',
-  warningBg: '#FEF3E8',
-  info: '#74B9E8',
-  infoBg: '#EBF5FD',
+  // ─── Text ───────────────────────────────────────────────────────────────────
+  textPrimary: '#2B2D42',    // dark charcoal — headings, body
+  textSecondary: '#6D6875',  // muted mauve-grey — captions, placeholders
+  textTertiary: '#A09AA8',   // lightest text for hints / disabled labels
+  textDisabled: '#B5B5C3',   // disabled text
+  textInverse: '#FFFFFF',    // white text on dark/colored backgrounds
+  textPlaceholder: '#C0B8C4',// placeholder input text
+  disabledText: '#B5B5C3',   // alias for textDisabled
+  disabledBg: '#EDE9E4',     // disabled button background
 
-  // Status badges
-  statusActive: '#84A59D',
-  statusActiveBg: '#E9F2EF',
-  statusPaused: '#F4A261',
-  statusPausedBg: '#FEF3E8',
-  statusCancelled: '#F28482',
-  statusCancelledBg: '#FDF0EF',
-  statusDelivered: '#84A59D',
-  statusShipped: '#74B9E8',
-  statusPending: '#F4A261',
+  // ─── Border / Divider ───────────────────────────────────────────────────────
+  border: '#E8E1DB',         // warm beige border
+  borderLight: '#F2EDE8',    // very subtle divider
+  borderMedium: '#DDD5CE',   // slightly stronger border
 
-  // Categories
-  categoryFeminine: '#FFCAD4',
-  categoryBaby: '#E8F5E9',
-  categoryPacks: '#F3E5F5',
-  categoryPromo: '#FFF3E0',
+  // ─── Feedback ───────────────────────────────────────────────────────────────
+  success: '#7AAF8E',        // soft green
+  successLight: '#E4F1E9',
+  successBg: '#E4F1E9',      // alias for successLight
+  warning: '#D4A96A',        // warm amber
+  warningLight: '#FAF0E0',
+  warningBg: '#FAF0E0',      // alias for warningLight
+  error: '#C47B7B',          // muted red
+  errorLight: '#FAE8E8',
+  errorBg: '#FAE8E8',        // alias for errorLight
+  info: '#7A9DC0',           // muted blue
+  infoLight: '#E4EEF7',
+  infoBg: '#E4EEF7',         // alias for infoLight
 
-  // Gradient
-  gradientStart: '#C2919B',
-  gradientEnd: '#B5838D',
-
-  // Overlay
-  overlay: 'rgba(43, 45, 66, 0.5)',
-  overlayLight: 'rgba(43, 45, 66, 0.1)',
-
-  // Transparent
+  // ─── Neutrals ───────────────────────────────────────────────────────────────
+  white: '#FFFFFF',
+  black: '#000000',
   transparent: 'transparent',
+  overlay: 'rgba(43, 45, 66, 0.40)',  // dark scrim for modals
+
+  // ─── Status Colors (subscription / order states) ─────────────────────────────
+  statusActive: '#7AAF8E',       // active subscription — soft green
+  statusActiveBg: '#E4F1E9',
+  statusPaused: '#D4A96A',       // paused — warm amber
+  statusPausedBg: '#FAF0E0',
+  statusCancelled: '#C47B7B',    // cancelled — muted red
+  statusCancelledBg: '#FAE8E8',
+  statusPending: '#7A9DC0',      // pending — muted blue
+  statusPendingBg: '#E4EEF7',
+
+  // ─── Shadow ─────────────────────────────────────────────────────────────────
+  shadowColor: '#B5838D',
+  shadowNeutral: '#2B2D42',
 };
 
-export type ColorKey = keyof typeof Colors;
+export default Colors;

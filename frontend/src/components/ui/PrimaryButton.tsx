@@ -1,7 +1,7 @@
 import React from 'react';
 import { TouchableOpacity, Text, ActivityIndicator, StyleSheet, ViewStyle, TextStyle } from 'react-native';
 import { Colors } from '../../constants/colors';
-import { Typography, BorderRadius, Shadow } from '../../constants/spacing';
+import { Typography, BorderRadius, Shadow, Spacing } from '../../constants/spacing';
 
 interface Props {
   label: string;
@@ -34,10 +34,12 @@ export default function PrimaryButton({ label, onPress, loading, disabled, style
 const styles = StyleSheet.create({
   btn: {
     backgroundColor: Colors.primary,
-    borderRadius: BorderRadius.pill,
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    minHeight: 56,
+    borderRadius: BorderRadius.full,
+    borderWidth: 1,
+    borderColor: Colors.primaryDark,
+    paddingVertical: Spacing.smd,
+    paddingHorizontal: Spacing.lg,
+    minHeight: 52,
     alignItems: 'center',
     justifyContent: 'center',
     ...Shadow.button,
@@ -45,9 +47,12 @@ const styles = StyleSheet.create({
   label: {
     ...Typography.button,
     color: Colors.textInverse,
-    letterSpacing: 0.3,
+    letterSpacing: 0.2,
   },
   disabled: {
-    opacity: 0.5,
+    opacity: 1,
+    backgroundColor: Colors.disabledBg,
+    borderColor: Colors.borderLight,
+    ...Shadow.card,
   },
 });

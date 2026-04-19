@@ -126,6 +126,13 @@ export interface Order {
   updatedAt: string;
 }
 
+export type PaymentMode = 'demo' | 'stripe';
+
+export interface PaymentResult {
+  paymentMode: PaymentMode;
+  order: Order;
+}
+
 export interface Invoice {
   id: string;
   invoiceNumber: string;

@@ -214,8 +214,11 @@ STRIPE_WEBHOOK_SECRET=whsec_xxx
 
 ```bash
 # API
-API_URL=http://localhost:8000/api
+EXPO_PUBLIC_BACKEND_URL=http://localhost:8000
 API_TIMEOUT=30000
+
+# Checkout
+EXPO_PUBLIC_PAYMENT_MODE=demo
 
 # Features
 ENABLE_ANALYTICS=false

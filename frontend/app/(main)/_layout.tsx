@@ -1,24 +1,27 @@
 import { Tabs } from 'expo-router';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../src/constants/colors';
 
 type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
-interface TabConfig {
-  name: string;
-  title: string;
-  icon: IconName;
-  iconFocused: IconName;
+function TabIcon({
+  focused,
+  color,
+  focusedIcon,
+  unfocusedIcon,
+}: {
+  focused: boolean;
+  color: string;
+  focusedIcon: IconName;
+  unfocusedIcon: IconName;
+}) {
+  return (
+    <View style={[styles.iconWrap, focused && styles.iconWrapActive]}>
+      <Ionicons name={focused ? focusedIcon : unfocusedIcon} size={20} color={color} />
+    </View>
+  );
 }
-
-const tabs: TabConfig[] = [
-  { name: '(home)/home',       title: 'Accueil',      icon: 'home-outline',     iconFocused: 'home' },
-  { name: '(catalog)/catalog', title: 'Catalogue',    icon: 'grid-outline',     iconFocused: 'grid' },
-  { name: '(subs)/subscriptions', title: 'Abonnements', icon: 'repeat-outline', iconFocused: 'repeat' },
-  { name: '(orders)/orders',   title: 'Commandes',    icon: 'cube-outline',     iconFocused: 'cube' },
-  { name: '(profile)/profile', title: 'Profil',       icon: 'person-outline',   iconFocused: 'person' },
-];
 
 export default function MainLayout() {
   return (
@@ -36,7 +39,16 @@ export default function MainLayout() {
         options={{
           title: 'Accueil',
           tabBarIcon: ({ focused, color }) => (
-            <Ionicons name={focused ? 'home' : 'home-outline'} size={22} color={color} />
+            <TabIcon focused={focused} color={color} focusedIcon="home" unfocusedIcon="home-outline" />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="(subs)/subscriptions"
+        options={{
+          title: 'Abonnement',
+          tabBarIcon: ({ focused, color }) => (
+            <TabIcon focused={focused} color={color} focusedIcon="repeat" unfocusedIcon="repeat-outline" />
           ),
         }}
       />
@@ -45,25 +57,16 @@ export default function MainLayout() {
         options={{
           title: 'Catalogue',
           tabBarIcon: ({ focused, color }) => (
-            <Ionicons name={focused ? 'grid' : 'grid-outline'} size={22} color={color} />
+            <TabIcon focused={focused} color={color} focusedIcon="grid" unfocusedIcon="grid-outline" />
           ),
         }}
       />
       <Tabs.Screen
-        name="(subs)/subscriptions"
+        name="guides"
         options={{
-          title: 'Abonnements',
+          title: 'Conseils',
           tabBarIcon: ({ focused, color }) => (
-            <Ionicons name={focused ? 'repeat' : 'repeat-outline'} size={22} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="(orders)/orders"
-        options={{
-          title: 'Commandes',
-          tabBarIcon: ({ focused, color }) => (
-            <Ionicons name={focused ? 'cube' : 'cube-outline'} size={22} color={color} />
+            <TabIcon focused={focused} color={color} focusedIcon="book" unfocusedIcon="book-outline" />
           ),
         }}
       />
@@ -72,11 +75,12 @@ export default function MainLayout() {
         options={{
           title: 'Profil',
           tabBarIcon: ({ focused, color }) => (
-            <Ionicons name={focused ? 'person' : 'person-outline'} size={22} color={color} />
+            <TabIcon focused={focused} color={color} focusedIcon="person" unfocusedIcon="person-outline" />
           ),
         }}
       />
       {/* Hidden screens (accessible via navigation but not in tab bar) */}
+      <Tabs.Screen name="(orders)/orders" options={{ href: null }} />
       <Tabs.Screen name="(catalog)/[id]" options={{ href: null }} />
       <Tabs.Screen name="(subs)/plan" options={{ href: null }} />
       <Tabs.Screen name="(orders)/tracking" options={{ href: null }} />
@@ -98,17 +102,30 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surface,
     borderTopWidth: 1,
     borderTopColor: Colors.borderLight,
-    height: 70,
+    height: 82,
     paddingBottom: 10,
     paddingTop: 8,
     elevation: 12,
-    shadowColor: '#000',
+    shadowColor: '#2B2D42',
     shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
   },
   tabLabel: {
     fontSize: 11,
     fontFamily: 'Poppins_500Medium',
+    marginTop: 2,
+  },
+  iconWrap: {
+    minWidth: 40,
+    height: 30,
+    borderRadius: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  iconWrapActive: {
+    backgroundColor: Colors.primaryPale,
+    borderWidth: 1,
+    borderColor: Colors.primaryLight,
   },
 });

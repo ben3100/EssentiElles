@@ -121,6 +121,7 @@ const T = {
   cart: { fr: 'Panier', en: 'Cart' },
   emptyCart: { fr: 'Votre panier est vide', en: 'Your cart is empty' },
   checkout: { fr: 'Valider la commande', en: 'Checkout' },
+  paymentDemoMode: { fr: 'Mode démo', en: 'Demo mode' },
   subtotal: { fr: 'Sous-total', en: 'Subtotal' },
   deliveryFree: { fr: 'Livraison offerte', en: 'Free delivery' },
   remove: { fr: 'Retirer', en: 'Remove' },
