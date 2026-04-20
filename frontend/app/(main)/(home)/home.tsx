@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl, Image, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useAuthStore } from '../../../src/store/authStore';
 import { subscriptionService, orderService, notificationService, offerService } from '../../../src/services/api';
 import { Subscription, Order, Notification, Offer } from '../../../src/models/types';
@@ -11,6 +12,8 @@ import SubscriptionCard from '../../../src/components/cards/SubscriptionCard';
 import OrderCard from '../../../src/components/cards/OrderCard';
 import { Colors } from '../../../src/constants/colors';
 import { Typography, Spacing, BorderRadius, Shadow } from '../../../src/constants/spacing';
+
+const { width } = Dimensions.get('window');
 
 function getGreeting() {
   const h = new Date().getHours();
@@ -64,31 +67,42 @@ export default function HomeScreen() {
   const daysLeft = nextDelivery ? daysUntil(nextDelivery.nextDeliveryDate) : null;
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <View style={styles.container}>
       <ScrollView
         testID="home-screen"
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />}
       >
-        {/* Header */}
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.greeting}>{getGreeting()},</Text>
-            <Text style={styles.userName}>{user?.firstName || 'Utilisatrice'} 🌸</Text>
-          </View>
-          <TouchableOpacity
-            testID="home-notifications-btn"
-            onPress={() => router.push('/(main)/notifications')}
-            style={styles.notifBtn}
-          >
-            <Ionicons name="notifications-outline" size={24} color={Colors.textPrimary} />
-            {unreadCount > 0 && (
-              <View testID="home-notification-badge" style={styles.badge}>
-                <Text style={styles.badgeText}>{unreadCount}</Text>
+        {/* Modern Header with Gradient */}
+        <LinearGradient
+          colors={[Colors.primary, Colors.secondary]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.headerGradient}
+        >
+          <SafeAreaView edges={['top']}>
+            <View style={styles.header}>
+              <View style={styles.headerContent}>
+                <View>
+                  <Text style={styles.greeting}>{getGreeting()}</Text>
+                  <Text style={styles.userName}>{user?.firstName || 'Utilisatrice'} ✨</Text>
+                </View>
+                <TouchableOpacity
+                  testID="home-notifications-btn"
+                  onPress={() => router.push('/(main)/notifications')}
+                  style={styles.notifBtn}
+                >
+                  <Ionicons name="notifications-outline" size={26} color={Colors.textInverse} />
+                  {unreadCount > 0 && (
+                    <View testID="home-notification-badge" style={styles.badge}>
+                      <Text style={styles.badgeText}>{unreadCount}</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
               </View>
-            )}
-          </TouchableOpacity>
-        </View>
+            </View>
+          </SafeAreaView>
+        </LinearGradient>
 
         <View style={styles.content}>
           {/* Next Delivery Card */}
@@ -231,35 +245,115 @@ export default function HomeScreen() {
           )}
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.background },
-  header: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingHorizontal: Spacing.screen, paddingTop: Spacing.md, paddingBottom: Spacing.sm,
-    backgroundColor: Colors.background,
+  container: { flex: 1, backgroundColor: Colors.background },
+  headerGradient: { 
+    paddingBottom: 24,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
   },
-  greeting: { fontSize: 14, fontFamily: 'Poppins_400Regular', color: Colors.textSecondary },
-  userName: { ...Typography.h3, color: Colors.textPrimary },
-  notifBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: Colors.surface, alignItems: 'center', justifyContent: 'center', position: 'relative', ...Shadow.card },
-  badge: { position: 'absolute', top: 6, right: 6, width: 16, height: 16, borderRadius: 8, backgroundColor: Colors.error, alignItems: 'center', justifyContent: 'center' },
-  badgeText: { fontSize: 9, color: Colors.textInverse, fontFamily: 'Poppins_700Bold' },
-  content: { paddingHorizontal: Spacing.screen, paddingBottom: Spacing.xl },
-  section: { marginTop: Spacing.lg },
+  header: {
+    paddingHorizontal: Spacing.screen,
+    paddingVertical: Spacing.md,
+  },
+  headerContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  greeting: { 
+    fontSize: 15, 
+    fontFamily: 'Poppins_400Regular', 
+    color: 'rgba(255, 255, 255, 0.9)',
+    marginBottom: 4,
+  },
+  userName: { 
+    fontSize: 28, 
+    fontFamily: 'Poppins_700Bold', 
+    color: Colors.textInverse,
+  },
+  notifBtn: { 
+    width: 48, 
+    height: 48, 
+    borderRadius: 24, 
+    backgroundColor: 'rgba(255, 255, 255, 0.2)', 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    position: 'relative',
+  },
+  badge: { 
+    position: 'absolute', 
+    top: 4, 
+    right: 4, 
+    minWidth: 20, 
+    height: 20, 
+    borderRadius: 10, 
+    backgroundColor: Colors.accent, 
+    alignItems: 'center', 
+    justifyContent: 'center',
+    paddingHorizontal: 6,
+    borderWidth: 2,
+    borderColor: Colors.primary,
+  },
+  badgeText: { 
+    fontSize: 11, 
+    color: Colors.textInverse, 
+    fontFamily: 'Poppins_700Bold' 
+  },
+  content: { paddingHorizontal: Spacing.screen, paddingBottom: Spacing.xl, marginTop: -12 },
+  section: { marginTop: Spacing.xl },
   deliveryCard: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    backgroundColor: Colors.card, borderRadius: BorderRadius.lg, padding: Spacing.md,
-    borderLeftWidth: 4, borderLeftColor: Colors.primary, ...Shadow.card,
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    justifyContent: 'space-between',
+    backgroundColor: Colors.card, 
+    borderRadius: BorderRadius.xl, 
+    padding: Spacing.lg,
+    ...Shadow.card,
+    borderWidth: 1,
+    borderColor: Colors.borderLight,
   },
   deliveryLeft: { flexDirection: 'row', alignItems: 'center', flex: 1 },
-  deliveryIconWrap: { width: 52, height: 52, borderRadius: 26, backgroundColor: Colors.primaryPale, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
-  deliveryProduct: { ...Typography.subtitle, color: Colors.textPrimary, maxWidth: 200 },
-  deliveryDate: { fontSize: 15, color: Colors.primary, fontFamily: 'Poppins_600SemiBold', marginTop: 2 },
-  deliveryFreq: { fontSize: 12, color: Colors.textTertiary, fontFamily: 'Poppins_400Regular', marginTop: 2 },
-  noSubCard: { backgroundColor: Colors.primaryPale, borderRadius: BorderRadius.lg, padding: Spacing.xl, alignItems: 'center', borderStyle: 'dashed', borderWidth: 1.5, borderColor: Colors.primaryLight },
+  deliveryIconWrap: { 
+    width: 56, 
+    height: 56, 
+    borderRadius: 16, 
+    backgroundColor: Colors.primaryPale, 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    marginRight: 14 
+  },
+  deliveryProduct: { 
+    fontSize: 16,
+    fontFamily: 'Poppins_600SemiBold',
+    color: Colors.textPrimary, 
+    maxWidth: 200 
+  },
+  deliveryDate: { 
+    fontSize: 16, 
+    color: Colors.primary, 
+    fontFamily: 'Poppins_700Bold', 
+    marginTop: 4 
+  },
+  deliveryFreq: { 
+    fontSize: 13, 
+    color: Colors.textSecondary, 
+    fontFamily: 'Poppins_400Regular', 
+    marginTop: 2 
+  },
+  noSubCard: { 
+    backgroundColor: Colors.surface, 
+    borderRadius: BorderRadius.xl, 
+    padding: Spacing.xl, 
+    alignItems: 'center', 
+    borderWidth: 2, 
+    borderColor: Colors.borderLight,
+    borderStyle: 'dashed',
+  },
   noSubText: { ...Typography.subtitle, color: Colors.primaryDark, marginTop: Spacing.sm, fontFamily: 'Poppins_600SemiBold' },
   noSubSub: { fontSize: 13, color: Colors.textSecondary, marginTop: 4, textAlign: 'center' },
   quickActions: { flexDirection: 'row', justifyContent: 'space-between' },
