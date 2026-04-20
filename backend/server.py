@@ -1013,6 +1013,338 @@ async def seed_offers():
         {"title": "Hygiène Féminine -15%", "titleEn": "Feminine Hygiene -15%", "description": "Sur toute la gamme de protections féminines ce mois-ci", "descriptionEn": "On all feminine hygiene products this month", "discount": 15, "badgeText": "Nouveau", "badgeTextEn": "New", "color": "#F3E5F5", "isActive": True, "order": 3, "image": "https://images.unsplash.com/photo-1764312270936-adb508140a6d?w=400&q=80", "createdAt": now},
     ])
 
+# ==================== WISHLIST ENDPOINTS ====================
+
+@api_router.get("/wishlist")
+async def get_wishlist(current_user: dict = Depends(get_current_user)):
+    """Get user's wishlist."""
+    items = await db.wishlist.find({"userId": ObjectId(current_user["id"])}).to_list(None)
+    product_ids = [item["productId"] for item in items]
+    products = await db.products.find({"_id": {"$in": product_ids}, "isActive": True}).to_list(None)
+    result = []
+    for item in items:
+        product = next((p for p in products if p["_id"] == item["productId"]), None)
+        if product:
+            result.append({
+                **serialize_doc(product),
+                "wishlistId": str(item["_id"]),
+                "addedAt": item.get("createdAt", datetime.now(timezone.utc)).isoformat()
+            })
+    return {"data": result}
+
+@api_router.post("/wishlist/{product_id}")
+async def add_to_wishlist(product_id: str, current_user: dict = Depends(get_current_user)):
+    """Add product to wishlist."""
+    product = await db.products.find_one({"_id": ObjectId(product_id)})
+    if not product:
+        raise HTTPException(status_code=404, detail="Produit introuvable")
+    
+    existing = await db.wishlist.find_one({
+        "userId": ObjectId(current_user["id"]),
+        "productId": ObjectId(product_id)
+    })
+    if existing:
+        return {"message": "Already in wishlist", "id": str(existing["_id"])}
+    
+    result = await db.wishlist.insert_one({
+        "userId": ObjectId(current_user["id"]),
+        "productId": ObjectId(product_id),
+        "createdAt": datetime.now(timezone.utc)
+    })
+    return {"message": "Added to wishlist", "id": str(result.inserted_id)}
+
+@api_router.delete("/wishlist/{product_id}")
+async def remove_from_wishlist(product_id: str, current_user: dict = Depends(get_current_user)):
+    """Remove product from wishlist."""
+    result = await db.wishlist.delete_one({
+        "userId": ObjectId(current_user["id"]),
+        "productId": ObjectId(product_id)
+    })
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Item not in wishlist")
+    return {"message": "Removed from wishlist"}
+
+# ==================== PRODUCT REVIEWS ENDPOINTS ====================
+
+class ReviewInput(BaseModel):
+    rating: int = Field(..., ge=1, le=5)
+    comment: str = Field(..., min_length=1, max_length=500)
+
+@api_router.get("/products/{product_id}/reviews")
+async def get_product_reviews(product_id: str, skip: int = 0, limit: int = 20):
+    """Get reviews for a product."""
+    reviews = await db.reviews.find(
+        {"productId": ObjectId(product_id)}
+    ).sort("createdAt", -1).skip(skip).limit(limit).to_list(None)
+    
+    result = []
+    for review in reviews:
+        user = await db.users.find_one({"_id": review["userId"]})
+        result.append({
+            **serialize_doc(review),
+            "user": {
+                "id": str(user["_id"]),
+                "firstName": user.get("firstName", ""),
+                "lastName": user.get("lastName", ""),
+            } if user else None
+        })
+    
+    # Calculate average rating
+    total_reviews = await db.reviews.count_documents({"productId": ObjectId(product_id)})
+    avg_rating = 0
+    if total_reviews > 0:
+        pipeline = [
+            {"$match": {"productId": ObjectId(product_id)}},
+            {"$group": {"_id": None, "avgRating": {"$avg": "$rating"}}}
+        ]
+        agg_result = await db.reviews.aggregate(pipeline).to_list(None)
+        if agg_result:
+            avg_rating = round(agg_result[0]["avgRating"], 1)
+    
+    return {
+        "data": result,
+        "total": total_reviews,
+        "averageRating": avg_rating
+    }
+
+@api_router.post("/products/{product_id}/reviews")
+async def create_review(product_id: str, review: ReviewInput, current_user: dict = Depends(get_current_user)):
+    """Create a product review."""
+    product = await db.products.find_one({"_id": ObjectId(product_id)})
+    if not product:
+        raise HTTPException(status_code=404, detail="Produit introuvable")
+    
+    # Check if user already reviewed
+    existing = await db.reviews.find_one({
+        "productId": ObjectId(product_id),
+        "userId": ObjectId(current_user["id"])
+    })
+    if existing:
+        raise HTTPException(status_code=400, detail="Vous avez déjà évalué ce produit")
+    
+    result = await db.reviews.insert_one({
+        "productId": ObjectId(product_id),
+        "userId": ObjectId(current_user["id"]),
+        "rating": review.rating,
+        "comment": review.comment,
+        "createdAt": datetime.now(timezone.utc)
+    })
+    return {"message": "Review created", "id": str(result.inserted_id)}
+
+@api_router.put("/reviews/{review_id}")
+async def update_review(review_id: str, review: ReviewInput, current_user: dict = Depends(get_current_user)):
+    """Update a review."""
+    existing = await db.reviews.find_one({"_id": ObjectId(review_id)})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Review not found")
+    if str(existing["userId"]) != current_user["id"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    await db.reviews.update_one(
+        {"_id": ObjectId(review_id)},
+        {"$set": {
+            "rating": review.rating,
+            "comment": review.comment,
+            "updatedAt": datetime.now(timezone.utc)
+        }}
+    )
+    return {"message": "Review updated"}
+
+@api_router.delete("/reviews/{review_id}")
+async def delete_review(review_id: str, current_user: dict = Depends(get_current_user)):
+    """Delete a review."""
+    existing = await db.reviews.find_one({"_id": ObjectId(review_id)})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Review not found")
+    if str(existing["userId"]) != current_user["id"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    await db.reviews.delete_one({"_id": ObjectId(review_id)})
+    return {"message": "Review deleted"}
+
+# ==================== PROMO CODES ENDPOINTS ====================
+
+class PromoCodeInput(BaseModel):
+    code: str
+
+@api_router.post("/promo/validate")
+async def validate_promo_code(promo: PromoCodeInput, current_user: dict = Depends(get_current_user)):
+    """Validate a promo code."""
+    code = await db.promo_codes.find_one({
+        "code": promo.code.upper(),
+        "isActive": True
+    })
+    
+    if not code:
+        raise HTTPException(status_code=404, detail="Code promo invalide")
+    
+    now = datetime.now(timezone.utc)
+    if code.get("validUntil") and code["validUntil"] < now:
+        raise HTTPException(status_code=400, detail="Code promo expiré")
+    
+    if code.get("validFrom") and code["validFrom"] > now:
+        raise HTTPException(status_code=400, detail="Code promo pas encore actif")
+    
+    # Check usage limit
+    if code.get("maxUses") and code.get("currentUses", 0) >= code["maxUses"]:
+        raise HTTPException(status_code=400, detail="Code promo épuisé")
+    
+    # Check if user already used it
+    if code.get("singleUse"):
+        used = await db.promo_usage.find_one({
+            "codeId": code["_id"],
+            "userId": ObjectId(current_user["id"])
+        })
+        if used:
+            raise HTTPException(status_code=400, detail="Code promo déjà utilisé")
+    
+    return {
+        "valid": True,
+        "code": code["code"],
+        "discountType": code.get("discountType", "percentage"),
+        "discountValue": code.get("discountValue", 0),
+        "description": code.get("description", ""),
+        "minAmount": code.get("minAmount", 0)
+    }
+
+@api_router.post("/promo/apply/{order_id}")
+async def apply_promo_code(order_id: str, promo: PromoCodeInput, current_user: dict = Depends(get_current_user)):
+    """Apply promo code to an order."""
+    # Validate promo code first
+    try:
+        validation = await validate_promo_code(promo, current_user)
+    except HTTPException as e:
+        raise e
+    
+    order = await db.orders.find_one({
+        "_id": ObjectId(order_id),
+        "userId": ObjectId(current_user["id"])
+    })
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    
+    code = await db.promo_codes.find_one({"code": promo.code.upper()})
+    
+    # Calculate discount
+    original_total = order["total"]
+    discount_amount = 0
+    
+    if code["discountType"] == "percentage":
+        discount_amount = original_total * (code["discountValue"] / 100)
+    else:  # fixed amount
+        discount_amount = min(code["discountValue"], original_total)
+    
+    new_total = original_total - discount_amount
+    
+    # Update order
+    await db.orders.update_one(
+        {"_id": ObjectId(order_id)},
+        {"$set": {
+            "promoCode": code["code"],
+            "discountAmount": discount_amount,
+            "total": new_total,
+            "updatedAt": datetime.now(timezone.utc)
+        }}
+    )
+    
+    # Track usage
+    await db.promo_usage.insert_one({
+        "codeId": code["_id"],
+        "userId": ObjectId(current_user["id"]),
+        "orderId": ObjectId(order_id),
+        "discountAmount": discount_amount,
+        "usedAt": datetime.now(timezone.utc)
+    })
+    
+    # Increment usage count
+    await db.promo_codes.update_one(
+        {"_id": code["_id"]},
+        {"$inc": {"currentUses": 1}}
+    )
+    
+    return {
+        "message": "Promo code applied",
+        "originalTotal": original_total,
+        "discountAmount": discount_amount,
+        "newTotal": new_total
+    }
+
+# ==================== ADMIN PROMO CODES ====================
+
+@api_router.get("/admin/promo-codes")
+async def admin_get_promo_codes(admin: dict = Depends(get_admin_user)):
+    """Get all promo codes."""
+    codes = await db.promo_codes.find().sort("createdAt", -1).to_list(None)
+    return {"data": [serialize_doc(c) for c in codes]}
+
+class PromoCodeCreate(BaseModel):
+    code: str = Field(..., min_length=3, max_length=20)
+    discountType: str = Field(..., pattern="^(percentage|fixed)$")
+    discountValue: float = Field(..., gt=0)
+    description: str = ""
+    validFrom: Optional[datetime] = None
+    validUntil: Optional[datetime] = None
+    minAmount: float = 0
+    maxUses: Optional[int] = None
+    singleUse: bool = False
+    isActive: bool = True
+
+@api_router.post("/admin/promo-codes")
+async def admin_create_promo_code(promo: PromoCodeCreate, admin: dict = Depends(get_admin_user)):
+    """Create a new promo code."""
+    # Check if code already exists
+    existing = await db.promo_codes.find_one({"code": promo.code.upper()})
+    if existing:
+        raise HTTPException(status_code=400, detail="Code already exists")
+    
+    result = await db.promo_codes.insert_one({
+        "code": promo.code.upper(),
+        "discountType": promo.discountType,
+        "discountValue": promo.discountValue,
+        "description": promo.description,
+        "validFrom": promo.validFrom,
+        "validUntil": promo.validUntil,
+        "minAmount": promo.minAmount,
+        "maxUses": promo.maxUses,
+        "singleUse": promo.singleUse,
+        "currentUses": 0,
+        "isActive": promo.isActive,
+        "createdAt": datetime.now(timezone.utc)
+    })
+    return {"message": "Promo code created", "id": str(result.inserted_id)}
+
+@api_router.put("/admin/promo-codes/{code_id}")
+async def admin_update_promo_code(code_id: str, promo: PromoCodeCreate, admin: dict = Depends(get_admin_user)):
+    """Update a promo code."""
+    existing = await db.promo_codes.find_one({"_id": ObjectId(code_id)})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Code not found")
+    
+    await db.promo_codes.update_one(
+        {"_id": ObjectId(code_id)},
+        {"$set": {
+            "discountType": promo.discountType,
+            "discountValue": promo.discountValue,
+            "description": promo.description,
+            "validFrom": promo.validFrom,
+            "validUntil": promo.validUntil,
+            "minAmount": promo.minAmount,
+            "maxUses": promo.maxUses,
+            "singleUse": promo.singleUse,
+            "isActive": promo.isActive,
+            "updatedAt": datetime.now(timezone.utc)
+        }}
+    )
+    return {"message": "Promo code updated"}
+
+@api_router.delete("/admin/promo-codes/{code_id}")
+async def admin_delete_promo_code(code_id: str, admin: dict = Depends(get_admin_user)):
+    """Delete a promo code."""
+    result = await db.promo_codes.delete_one({"_id": ObjectId(code_id)})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Code not found")
+    return {"message": "Promo code deleted"}
+
 app.include_router(api_router)
 app.add_middleware(
     CORSMiddleware,

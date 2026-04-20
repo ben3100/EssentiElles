@@ -1,64 +1,97 @@
-// Livrella Design System — Color Palette
+// EssentiElles Modern Design System — Color Palette
 export const Colors = {
-  // Brand
-  primary: '#B5838D',
-  primaryLight: '#E5B8BE',
-  primaryDark: '#9D6B75',
-  primaryPale: '#FCE8EB',
-  secondary: '#FFCAD4',
-  accent: '#F4ECE6',
+  // Brand - Modern Gradients
+  primary: '#FF6B9D',
+  primaryLight: '#FFB3D1',
+  primaryDark: '#E8578C',
+  primaryPale: '#FFF0F5',
+  secondary: '#8B5CF6',
+  accent: '#F59E0B',
 
-  // Backgrounds
-  background: '#FDFBF9',
+  // Backgrounds - Clean & Minimal
+  background: '#F9FAFB',
   surface: '#FFFFFF',
-  surfaceAlt: '#FFF8FA',
+  surfaceAlt: '#F3F4F6',
   card: '#FFFFFF',
+  cardHover: '#FAFAFA',
 
-  // Text
-  textPrimary: '#2B2D42',
-  textSecondary: '#6D6875',
-  textTertiary: '#A09CAB',
+  // Glassmorphism
+  glass: 'rgba(255, 255, 255, 0.8)',
+  glassAlt: 'rgba(255, 255, 255, 0.6)',
+
+  // Text - High Contrast
+  textPrimary: '#1F2937',
+  textSecondary: '#6B7280',
+  textTertiary: '#9CA3AF',
   textInverse: '#FFFFFF',
-  textPlaceholder: '#C4B5BB',
+  textPlaceholder: '#D1D5DB',
 
-  // Borders
-  borderLight: '#F0EBE6',
-  borderMedium: '#E0D7D3',
+  // Borders - Subtle
+  borderLight: '#E5E7EB',
+  borderMedium: '#D1D5DB',
+  borderDark: '#9CA3AF',
 
-  // Feedback
-  success: '#84A59D',
-  successBg: '#E9F2EF',
-  error: '#F28482',
-  errorBg: '#FDF0EF',
-  warning: '#F4A261',
-  warningBg: '#FEF3E8',
-  info: '#74B9E8',
-  infoBg: '#EBF5FD',
+  // Feedback - Vibrant
+  success: '#10B981',
+  successBg: '#D1FAE5',
+  successLight: '#6EE7B7',
+  error: '#EF4444',
+  errorBg: '#FEE2E2',
+  errorLight: '#FCA5A5',
+  warning: '#F59E0B',
+  warningBg: '#FEF3C7',
+  warningLight: '#FCD34D',
+  info: '#3B82F6',
+  infoBg: '#DBEAFE',
+  infoLight: '#93C5FD',
 
-  // Status badges
-  statusActive: '#84A59D',
-  statusActiveBg: '#E9F2EF',
-  statusPaused: '#F4A261',
-  statusPausedBg: '#FEF3E8',
-  statusCancelled: '#F28482',
-  statusCancelledBg: '#FDF0EF',
-  statusDelivered: '#84A59D',
-  statusShipped: '#74B9E8',
-  statusPending: '#F4A261',
+  // Status badges - Modern
+  statusActive: '#10B981',
+  statusActiveBg: '#D1FAE5',
+  statusPaused: '#F59E0B',
+  statusPausedBg: '#FEF3C7',
+  statusCancelled: '#EF4444',
+  statusCancelledBg: '#FEE2E2',
+  statusDelivered: '#10B981',
+  statusShipped: '#3B82F6',
+  statusPending: '#F59E0B',
+  statusConfirmed: '#8B5CF6',
 
-  // Categories
-  categoryFeminine: '#FFCAD4',
-  categoryBaby: '#E8F5E9',
-  categoryPacks: '#F3E5F5',
-  categoryPromo: '#FFF3E0',
+  // Categories - Vibrant
+  categoryFeminine: '#FF6B9D',
+  categoryBaby: '#10B981',
+  categoryPacks: '#8B5CF6',
+  categoryPromo: '#F59E0B',
+  categoryHygiene: '#EC4899',
+  categoryHealth: '#3B82F6',
 
-  // Gradient
-  gradientStart: '#C2919B',
-  gradientEnd: '#B5838D',
+  // Modern Gradients
+  gradientStart: '#FF6B9D',
+  gradientMid: '#8B5CF6',
+  gradientEnd: '#3B82F6',
+  gradientPrimary: 'linear-gradient(135deg, #FF6B9D 0%, #8B5CF6 100%)',
+  gradientSuccess: 'linear-gradient(135deg, #10B981 0%, #3B82F6 100%)',
+  gradientWarning: 'linear-gradient(135deg, #F59E0B 0%, #EF4444 100%)',
 
-  // Overlay
-  overlay: 'rgba(43, 45, 66, 0.5)',
-  overlayLight: 'rgba(43, 45, 66, 0.1)',
+  // Overlay - Modern
+  overlay: 'rgba(0, 0, 0, 0.6)',
+  overlayLight: 'rgba(0, 0, 0, 0.2)',
+  overlayStrong: 'rgba(0, 0, 0, 0.8)',
+
+  // Dark Mode Support
+  dark: {
+    background: '#111827',
+    surface: '#1F2937',
+    card: '#374151',
+    textPrimary: '#F9FAFB',
+    textSecondary: '#D1D5DB',
+    textTertiary: '#9CA3AF',
+    border: '#4B5563',
+  },
+
+  // Special Effects
+  shimmer: '#E5E7EB',
+  shimmerHighlight: '#F9FAFB',
 
   // Transparent
   transparent: 'transparent',
